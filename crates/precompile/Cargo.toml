@@ -48,6 +48,7 @@ ark-bn254 = { workspace = true, features = ["curve"] }
 ark-ec = { workspace = true }
 ark-ff = { workspace = true, features = ["asm"] }
 ark-serialize = { workspace = true }
+solana-program = { workspace = true }
 
 # KZG point evaluation precompile
 c-kzg = { workspace = true, optional = true, features = [
@@ -99,6 +100,7 @@ std = [
 hashbrown = ["primitives/hashbrown"]
 asm-keccak = ["primitives/asm-keccak"]
 asm-sha2 = ["sha2/asm"]
+solana-sbf = []
 
 
 # Enables the c-kzg point evaluation precompile. Enabled by default as most stable/used implementation.
