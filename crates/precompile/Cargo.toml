@@ -28,7 +28,7 @@ aurora-engine-modexp.workspace = true
 gmp-mpfr-sys = { workspace = true, default-features = false, optional = true }
 
 # ecRecover
-k256 = { workspace = true, features = ["ecdsa"] }
+k256 = { workspace = true, features = ["ecdsa"], optional = true }
 secp256k1 = { workspace = true, features = [
 	"alloc",
 	"recovery",
@@ -48,7 +48,7 @@ ark-bn254 = { workspace = true, features = ["curve"] }
 ark-ec = { workspace = true }
 ark-ff = { workspace = true, features = ["asm"] }
 ark-serialize = { workspace = true }
-solana-program = { workspace = true }
+solana-program = { workspace = true, optional = true }
 
 # KZG point evaluation precompile
 c-kzg = { workspace = true, optional = true, features = [
@@ -100,7 +100,8 @@ std = [
 hashbrown = ["primitives/hashbrown"]
 asm-keccak = ["primitives/asm-keccak"]
 asm-sha2 = ["sha2/asm"]
-solana-sbf = []
+solana-sbf = ["dep:solana-program"]
+k256 = ["dep:k256"]
 
 
 # Enables the c-kzg point evaluation precompile. Enabled by default as most stable/used implementation.

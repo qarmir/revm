@@ -104,6 +104,7 @@ optional_priority_fee_check = ["context/optional_priority_fee_check"]
 # Precompiles features: Please look at the comments in `precompile` crate for more information.
 
 secp256k1 = ["precompile/secp256k1"] # See comments in `precompile` use it with caution
+k256 = ["precompile/k256"]
 c-kzg = ["precompile/c-kzg"]
 
 # blst will be enabled both for bls precompiles and for kzg precompile.

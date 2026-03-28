@@ -65,6 +65,7 @@ optional_fee_charge = ["revm/optional_fee_charge"]
 
 # See comments in `revm-precompile`
 secp256k1 = ["revm/secp256k1"]
+k256 = ["revm/k256"]
 c-kzg = ["revm/c-kzg"]
 blst = ["revm/blst"]
 bn = ["revm/bn"]
