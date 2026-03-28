@@ -37,7 +37,16 @@ serde_json = { workspace = true, features = ["alloc", "preserve_order"] }
 serde = { workspace = true, features = ["derive"] }
 
 [features]
-default = ["std", "secp256k1", "portable", "tracer", "c-kzg", "blst"]
+default = [
+	"std",
+	"secp256k1",
+	"portable",
+	"tracer",
+	"c-kzg",
+	"blst",
+	"bn-precompile",
+	"bls-precompile",
+]
 std = [
 	"interpreter/std",
 	"precompile/std",
@@ -110,6 +119,8 @@ c-kzg = ["precompile/c-kzg"]
 # blst will be enabled both for bls precompiles and for kzg precompile.
 blst = ["precompile/blst"]
 bn = ["precompile/bn"]
+bn-precompile = ["precompile/bn-precompile"]
+bls-precompile = ["precompile/bls-precompile"]
 asm-sha2 = ["precompile/asm-sha2"]
 
 # Compile in portable mode, without ISA extensions.

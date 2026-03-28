@@ -9,9 +9,11 @@
 extern crate alloc as std;
 
 pub mod blake2;
+#[cfg(feature = "bls-precompile")]
 pub mod bls12_381;
 pub mod bls12_381_const;
 pub mod bls12_381_utils;
+#[cfg(feature = "bn-precompile")]
 pub mod bn254;
 pub mod hash;
 mod id;
@@ -30,7 +32,7 @@ pub use interface::*;
 
 // silence arkworks lint as bn impl will be used as default if both are enabled.
 cfg_if::cfg_if! {
-    if #[cfg(feature = "bn")]{
+    if #[cfg(all(feature = "bn", feature = "bn-precompile"))]{
         use ark_bn254 as _;
         use ark_ff as _;
         use ark_ec as _;
@@ -42,7 +44,7 @@ use arrayref as _;
 
 // silence arkworks-bls12-381 lint as blst will be used as default if both are enabled.
 cfg_if::cfg_if! {
-    if #[cfg(feature = "blst")]{
+    if #[cfg(all(feature = "blst", feature = "bls-precompile"))]{
         use ark_bls12_381 as _;
         use ark_ff as _;
         use ark_ec as _;
@@ -140,9 +142,9 @@ impl Precompiles {
         static INSTANCE: OnceLock<Precompiles> = OnceLock::new();
         INSTANCE.get_or_init(|| {
             let mut precompiles = Self::homestead().clone();
+            precompiles.extend([modexp::BYZANTIUM]);
+            #[cfg(feature = "bn-precompile")]
             precompiles.extend([
-                // EIP-198: Big integer modular exponentiation.
-                modexp::BYZANTIUM,
                 // EIP-196: Precompiled contracts for addition and scalar multiplication on the elliptic curve alt_bn128.
                 // EIP-197: Precompiled contracts for optimal ate pairing check on the elliptic curve alt_bn128.
                 bn254::add::BYZANTIUM,
@@ -158,14 +160,15 @@ impl Precompiles {
         static INSTANCE: OnceLock<Precompiles> = OnceLock::new();
         INSTANCE.get_or_init(|| {
             let mut precompiles = Self::byzantium().clone();
+            #[cfg(feature = "bn-precompile")]
             precompiles.extend([
                 // EIP-1108: Reduce alt_bn128 precompile gas costs.
                 bn254::add::ISTANBUL,
                 bn254::mul::ISTANBUL,
                 bn254::pair::ISTANBUL,
-                // EIP-152: Add BLAKE2 compression function `F` precompile.
-                blake2::FUN,
             ]);
+            // EIP-152: Add BLAKE2 compression function `F` precompile.
+            precompiles.extend([blake2::FUN]);
             precompiles
         })
     }
@@ -203,7 +206,9 @@ impl Precompiles {
     pub fn prague() -> &'static Self {
         static INSTANCE: OnceLock<Precompiles> = OnceLock::new();
         INSTANCE.get_or_init(|| {
+            #[allow(unused_mut)]
             let mut precompiles = Self::cancun().clone();
+            #[cfg(feature = "bls-precompile")]
             precompiles.extend(bls12_381::precompiles());
             precompiles
         })

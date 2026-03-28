@@ -5,7 +5,16 @@ use core::fmt::{self, Debug};
 use primitives::{Bytes, OnceLock};
 use std::{borrow::Cow, boxed::Box, string::String, vec::Vec};
 
+#[cfg(feature = "bls-precompile")]
 use crate::bls12_381::{G1Point, G1PointScalar, G2Point, G2PointScalar};
+#[cfg(not(feature = "bls-precompile"))]
+type G1Point = ([u8; 48], [u8; 48]);
+#[cfg(not(feature = "bls-precompile"))]
+type G2Point = ([u8; 48], [u8; 48], [u8; 48], [u8; 48]);
+#[cfg(not(feature = "bls-precompile"))]
+type G1PointScalar = (G1Point, [u8; 32]);
+#[cfg(not(feature = "bls-precompile"))]
+type G2PointScalar = (G2Point, [u8; 32]);
 
 /// Global crypto provider instance
 static CRYPTO: OnceLock<Box<dyn Crypto>> = OnceLock::new();
@@ -91,18 +100,42 @@ pub trait Crypto: Send + Sync + Debug {
     /// BN254 elliptic curve addition.
     #[inline]
     fn bn254_g1_add(&self, p1: &[u8], p2: &[u8]) -> Result<[u8; 64], PrecompileError> {
+        #[cfg(not(feature = "bn-precompile"))]
+        {
+            let _ = (p1, p2);
+            return Err(PrecompileError::other_static(
+                "bn254 precompile is disabled at compile time",
+            ));
+        }
+        #[cfg(feature = "bn-precompile")]
         crate::bn254::crypto_backend::g1_point_add(p1, p2)
     }
 
     /// BN254 elliptic curve scalar multiplication.
     #[inline]
     fn bn254_g1_mul(&self, point: &[u8], scalar: &[u8]) -> Result<[u8; 64], PrecompileError> {
+        #[cfg(not(feature = "bn-precompile"))]
+        {
+            let _ = (point, scalar);
+            return Err(PrecompileError::other_static(
+                "bn254 precompile is disabled at compile time",
+            ));
+        }
+        #[cfg(feature = "bn-precompile")]
         crate::bn254::crypto_backend::g1_point_mul(point, scalar)
     }
 
     /// BN254 pairing check.
     #[inline]
     fn bn254_pairing_check(&self, pairs: &[(&[u8], &[u8])]) -> Result<bool, PrecompileError> {
+        #[cfg(not(feature = "bn-precompile"))]
+        {
+            let _ = pairs;
+            return Err(PrecompileError::other_static(
+                "bn254 precompile is disabled at compile time",
+            ));
+        }
+        #[cfg(feature = "bn-precompile")]
         crate::bn254::crypto_backend::pairing_check(pairs)
     }
 
@@ -154,6 +187,14 @@ pub trait Crypto: Send + Sync + Debug {
 
     /// BLS12-381 G1 addition (returns 96-byte unpadded G1 point)
     fn bls12_381_g1_add(&self, a: G1Point, b: G1Point) -> Result<[u8; 96], PrecompileError> {
+        #[cfg(not(feature = "bls-precompile"))]
+        {
+            let _ = (a, b);
+            return Err(PrecompileError::other_static(
+                "bls12-381 precompile is disabled at compile time",
+            ));
+        }
+        #[cfg(feature = "bls-precompile")]
         crate::bls12_381::crypto_backend::p1_add_affine_bytes(a, b)
     }
 
@@ -162,11 +203,27 @@ pub trait Crypto: Send + Sync + Debug {
         &self,
         pairs: &mut dyn Iterator<Item = Result<G1PointScalar, PrecompileError>>,
     ) -> Result<[u8; 96], PrecompileError> {
+        #[cfg(not(feature = "bls-precompile"))]
+        {
+            let _ = pairs;
+            return Err(PrecompileError::other_static(
+                "bls12-381 precompile is disabled at compile time",
+            ));
+        }
+        #[cfg(feature = "bls-precompile")]
         crate::bls12_381::crypto_backend::p1_msm_bytes(pairs)
     }
 
     /// BLS12-381 G2 addition (returns 192-byte unpadded G2 point)
     fn bls12_381_g2_add(&self, a: G2Point, b: G2Point) -> Result<[u8; 192], PrecompileError> {
+        #[cfg(not(feature = "bls-precompile"))]
+        {
+            let _ = (a, b);
+            return Err(PrecompileError::other_static(
+                "bls12-381 precompile is disabled at compile time",
+            ));
+        }
+        #[cfg(feature = "bls-precompile")]
         crate::bls12_381::crypto_backend::p2_add_affine_bytes(a, b)
     }
 
@@ -175,6 +232,14 @@ pub trait Crypto: Send + Sync + Debug {
         &self,
         pairs: &mut dyn Iterator<Item = Result<G2PointScalar, PrecompileError>>,
     ) -> Result<[u8; 192], PrecompileError> {
+        #[cfg(not(feature = "bls-precompile"))]
+        {
+            let _ = pairs;
+            return Err(PrecompileError::other_static(
+                "bls12-381 precompile is disabled at compile time",
+            ));
+        }
+        #[cfg(feature = "bls-precompile")]
         crate::bls12_381::crypto_backend::p2_msm_bytes(pairs)
     }
 
@@ -183,16 +248,40 @@ pub trait Crypto: Send + Sync + Debug {
         &self,
         pairs: &[(G1Point, G2Point)],
     ) -> Result<bool, PrecompileError> {
+        #[cfg(not(feature = "bls-precompile"))]
+        {
+            let _ = pairs;
+            return Err(PrecompileError::other_static(
+                "bls12-381 precompile is disabled at compile time",
+            ));
+        }
+        #[cfg(feature = "bls-precompile")]
         crate::bls12_381::crypto_backend::pairing_check_bytes(pairs)
     }
 
     /// BLS12-381 map field element to G1.
     fn bls12_381_fp_to_g1(&self, fp: &[u8; 48]) -> Result<[u8; 96], PrecompileError> {
+        #[cfg(not(feature = "bls-precompile"))]
+        {
+            let _ = fp;
+            return Err(PrecompileError::other_static(
+                "bls12-381 precompile is disabled at compile time",
+            ));
+        }
+        #[cfg(feature = "bls-precompile")]
         crate::bls12_381::crypto_backend::map_fp_to_g1_bytes(fp)
     }
 
     /// BLS12-381 map field element to G2.
     fn bls12_381_fp2_to_g2(&self, fp2: ([u8; 48], [u8; 48])) -> Result<[u8; 192], PrecompileError> {
+        #[cfg(not(feature = "bls-precompile"))]
+        {
+            let _ = fp2;
+            return Err(PrecompileError::other_static(
+                "bls12-381 precompile is disabled at compile time",
+            ));
+        }
+        #[cfg(feature = "bls-precompile")]
         crate::bls12_381::crypto_backend::map_fp2_to_g2_bytes(&fp2.0, &fp2.1)
     }
 }
