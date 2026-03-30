@@ -1,6 +1,6 @@
 //! `OnceLock` abstraction that uses [`std::sync::OnceLock`] when available, once_cell otherwise.
 
-#[cfg(target_arch = "sbf")]
+#[cfg(target_os = "solana")]
 mod solana_impl {
     use core::cell::UnsafeCell;
 
@@ -120,13 +120,13 @@ mod no_std_impl {
     }
 }
 
-#[cfg(all(feature = "std", not(target_arch = "sbf")))]
+#[cfg(all(feature = "std", not(target_os = "solana")))]
 use once_cell as _;
-#[cfg(all(feature = "std", not(target_arch = "sbf")))]
+#[cfg(all(feature = "std", not(target_os = "solana")))]
 pub use std::sync::OnceLock;
 
-#[cfg(all(not(feature = "std"), not(target_arch = "sbf")))]
+#[cfg(all(not(feature = "std"), not(target_os = "solana")))]
 pub use no_std_impl::OnceLock;
 
-#[cfg(target_arch = "sbf")]
+#[cfg(target_os = "solana")]
 pub use solana_impl::OnceLock;

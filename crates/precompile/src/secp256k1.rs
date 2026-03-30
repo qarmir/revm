@@ -5,15 +5,15 @@
 //! * [`secp256k1`](https://crates.io/crates/secp256k1) - uses `bitcoin_secp256k1` lib, it is a C implementation of secp256k1 used in bitcoin core.
 //!   It is faster than k256 and enabled by default and in std environment.
 
-#[cfg(all(feature = "secp256k1", not(target_arch = "sbf")))]
+#[cfg(all(feature = "secp256k1", not(target_os = "solana")))]
 /// `ecrecover` backend powered by the `secp256k1` crate.
 pub mod bitcoin_secp256k1;
 
-#[cfg(target_arch = "sbf")]
+#[cfg(target_os = "solana")]
 /// `ecrecover` backend powered by Solana secp256k1 recovery syscall.
 pub mod solana_k256;
 
-#[cfg(all(feature = "k256", not(target_arch = "sbf")))]
+#[cfg(all(feature = "k256", not(target_os = "solana")))]
 /// `ecrecover` backend powered by the pure Rust `k256` crate.
 pub mod k256;
 
@@ -63,7 +63,7 @@ pub(crate) fn ecrecover_bytes(sig: &[u8; 64], recid: u8, msg: &[u8; 32]) -> Opti
 
 // Select the correct implementation based on the enabled features.
 cfg_if::cfg_if! {
-    if #[cfg(target_arch = "sbf")] {
+    if #[cfg(target_os = "solana")] {
         pub use solana_k256::ecrecover;
     } else if #[cfg(feature = "secp256k1")] {
         pub use bitcoin_secp256k1::ecrecover;

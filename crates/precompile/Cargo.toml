@@ -69,7 +69,7 @@ aws-lc-rs = { workspace = true, optional = true }
 cfg-if.workspace = true
 arrayref = "0.3.6"
 
-[target.'cfg(target_arch = "sbf")'.dependencies]
+[target.'cfg(target_os = "solana")'.dependencies]
 solana-program.workspace = true
 
 [dev-dependencies]

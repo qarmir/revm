@@ -38,20 +38,18 @@ where
 
     fn build_mainnet(self) -> MainnetEvm<Self::Context> {
         let spec = self.cfg.spec().into();
-        let instruction = EthInstructions::new_mainnet_with_spec(spec);
-        msg!("instructions created");
-        let precompiles = EthPrecompiles::new(spec);
-        msg!("precompiles created");
-        #[cfg(any(target_arch = "bpf", target_arch = "sbf"))]
+
+        #[cfg(target_os = "solana")]
         let frame_stack = FrameStack::new();
-        #[cfg(not(any(target_arch = "bpf", target_arch = "sbf")))]
+        #[cfg(not(target_os = "solana"))]
         let frame_stack = FrameStack::new_prealloc(8);
+
         msg!("frame stack created");
         Evm {
             ctx: self,
             inspector: (),
-            instruction,
-            precompiles,
+            instruction: EthInstructions::new_mainnet_with_spec(spec),
+            precompiles: EthPrecompiles::new(spec),
             frame_stack,
         }
     }
@@ -61,9 +59,9 @@ where
         inspector: INSP,
     ) -> MainnetEvm<Self::Context, INSP> {
         let spec = self.cfg.spec().into();
-        #[cfg(any(target_arch = "bpf", target_arch = "sbf"))]
+        #[cfg(target_os = "solana")]
         let frame_stack = FrameStack::new();
-        #[cfg(not(any(target_arch = "bpf", target_arch = "sbf")))]
+        #[cfg(not(target_os = "solana"))]
         let frame_stack = FrameStack::new_prealloc(8);
         Evm {
             ctx: self,

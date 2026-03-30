@@ -10,23 +10,23 @@ use primitives::{
     hardfork::SpecId::{self},
     U256,
 };
-#[cfg(target_arch = "sbf")]
+#[cfg(target_os = "solana")]
 use std::boxed::Box;
-#[cfg(not(target_arch = "sbf"))]
+#[cfg(not(target_os = "solana"))]
 use std::sync::Arc;
 
-#[cfg(target_arch = "sbf")]
+#[cfg(target_os = "solana")]
 type GasTable = Box<[u64; 256]>;
-#[cfg(not(target_arch = "sbf"))]
+#[cfg(not(target_os = "solana"))]
 type GasTable = Arc<[u64; 256]>;
 
 #[inline]
 fn into_gas_table(table: [u64; 256]) -> GasTable {
-    #[cfg(target_arch = "sbf")]
+    #[cfg(target_os = "solana")]
     {
         return Box::new(table);
     }
-    #[cfg(not(target_arch = "sbf"))]
+    #[cfg(not(target_os = "solana"))]
     {
         Arc::new(table)
     }
