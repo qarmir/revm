@@ -8,7 +8,7 @@ use core::hash::{Hash, Hasher};
 use primitives::{
     eip7702,
     hardfork::SpecId::{self},
-    OnceLock, U256,
+    U256,
 };
 #[cfg(target_arch = "sbf")]
 use std::boxed::Box;
@@ -158,58 +158,27 @@ impl GasParams {
     #[inline(never)]
     pub fn new_spec(spec: SpecId) -> Self {
         use SpecId::*;
-        let gas_params = match spec {
-            FRONTIER | FRONTIER_THAWING => {
-                static TABLE: OnceLock<GasParams> = OnceLock::new();
-                TABLE.get_or_init(|| Self::new_spec_inner(spec))
-            }
+        match spec {
+            FRONTIER | FRONTIER_THAWING => Self::new_spec_inner(spec),
             // Transaction creation cost was added in homestead fork.
-            HOMESTEAD | DAO_FORK => {
-                static TABLE: OnceLock<GasParams> = OnceLock::new();
-                TABLE.get_or_init(|| Self::new_spec_inner(spec))
-            }
+            HOMESTEAD | DAO_FORK => Self::new_spec_inner(spec),
             // New account cost for selfdestruct was added in tangerine fork.
-            TANGERINE => {
-                static TABLE: OnceLock<GasParams> = OnceLock::new();
-                TABLE.get_or_init(|| Self::new_spec_inner(spec))
-            }
+            TANGERINE => Self::new_spec_inner(spec),
             // EXP cost was increased in spurious dragon fork.
-            SPURIOUS_DRAGON | BYZANTIUM | CONSTANTINOPLE | PETERSBURG => {
-                static TABLE: OnceLock<GasParams> = OnceLock::new();
-                TABLE.get_or_init(|| Self::new_spec_inner(spec))
-            }
+            SPURIOUS_DRAGON | BYZANTIUM | CONSTANTINOPLE | PETERSBURG => Self::new_spec_inner(spec),
             // SSTORE gas calculation changed in istanbul fork.
-            ISTANBUL | MUIR_GLACIER => {
-                static TABLE: OnceLock<GasParams> = OnceLock::new();
-                TABLE.get_or_init(|| Self::new_spec_inner(spec))
-            }
+            ISTANBUL | MUIR_GLACIER => Self::new_spec_inner(spec),
             // Warm/cold state access
-            BERLIN => {
-                static TABLE: OnceLock<GasParams> = OnceLock::new();
-                TABLE.get_or_init(|| Self::new_spec_inner(spec))
-            }
+            BERLIN => Self::new_spec_inner(spec),
             // Refund reduction in london fork.
-            LONDON | ARROW_GLACIER | GRAY_GLACIER | MERGE => {
-                static TABLE: OnceLock<GasParams> = OnceLock::new();
-                TABLE.get_or_init(|| Self::new_spec_inner(spec))
-            }
+            LONDON | ARROW_GLACIER | GRAY_GLACIER | MERGE => Self::new_spec_inner(spec),
             // Transaction initcode cost was introduced in shanghai fork.
-            SHANGHAI | CANCUN => {
-                static TABLE: OnceLock<GasParams> = OnceLock::new();
-                TABLE.get_or_init(|| Self::new_spec_inner(spec))
-            }
+            SHANGHAI | CANCUN => Self::new_spec_inner(spec),
             // EIP-7702 was introduced in prague fork.
-            PRAGUE | OSAKA => {
-                static TABLE: OnceLock<GasParams> = OnceLock::new();
-                TABLE.get_or_init(|| Self::new_spec_inner(spec))
-            }
+            PRAGUE | OSAKA => Self::new_spec_inner(spec),
             // New fork.
-            SpecId::AMSTERDAM => {
-                static TABLE: OnceLock<GasParams> = OnceLock::new();
-                TABLE.get_or_init(|| Self::new_spec_inner(spec))
-            }
-        };
-        gas_params.clone()
+            SpecId::AMSTERDAM => Self::new_spec_inner(spec),
+        }
     }
 
     /// Creates a new `GasParams` for the given spec.

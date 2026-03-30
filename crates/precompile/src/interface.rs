@@ -2,8 +2,8 @@
 //! the precompile output type, and the precompile error type.
 use context_interface::result::AnyError;
 use core::fmt::{self, Debug};
-use primitives::{Bytes, OnceLock};
-use std::{borrow::Cow, boxed::Box, string::String, vec::Vec};
+use primitives::Bytes;
+use std::{borrow::Cow, string::String, vec::Vec};
 
 #[cfg(feature = "bls-precompile")]
 use crate::bls12_381::{G1Point, G1PointScalar, G2Point, G2PointScalar};
@@ -16,17 +16,16 @@ type G1PointScalar = (G1Point, [u8; 32]);
 #[cfg(not(feature = "bls-precompile"))]
 type G2PointScalar = (G2Point, [u8; 32]);
 
-/// Global crypto provider instance
-static CRYPTO: OnceLock<Box<dyn Crypto>> = OnceLock::new();
-
 /// Install a custom crypto provider globally.
-pub fn install_crypto<C: Crypto + 'static>(crypto: C) -> bool {
-    CRYPTO.set(Box::new(crypto)).is_ok()
+///
+/// This build does not keep global mutable state, so custom installation is disabled.
+pub fn install_crypto<C: Crypto + 'static>(_crypto: C) -> bool {
+    false
 }
 
 /// Get the installed crypto provider, or the default if none is installed.
 pub fn crypto() -> &'static dyn Crypto {
-    CRYPTO.get_or_init(|| Box::new(DefaultCrypto)).as_ref()
+    &DefaultCrypto
 }
 
 /// A precompile operation result type

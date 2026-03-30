@@ -102,7 +102,6 @@ impl Sealable for Bytecode {
 }
 
 impl Bytecode {
-    #[cfg(target_arch = "sbf")]
     /// Creates a new legacy analyzed [`Bytecode`] with exactly one STOP opcode.
     #[inline]
     pub fn new() -> Self {
@@ -117,28 +116,6 @@ impl Bytecode {
                 hash
             },
         }))
-    }
-
-    #[cfg(not(target_arch = "sbf"))]
-    /// Creates a new legacy analyzed [`Bytecode`] with exactly one STOP opcode.
-    #[inline]
-    pub fn new() -> Self {
-        static DEFAULT_BYTECODE: OnceLock<Bytecode> = OnceLock::new();
-        DEFAULT_BYTECODE
-            .get_or_init(|| {
-                Self(Arc::new(BytecodeInner {
-                    kind: BytecodeKind::LegacyAnalyzed,
-                    bytecode: Bytes::from_static(&[opcode::STOP]),
-                    original_len: 0,
-                    jump_table: JumpTable::default(),
-                    hash: {
-                        let hash = OnceLock::new();
-                        let _ = hash.set(KECCAK_EMPTY);
-                        hash
-                    },
-                }))
-            })
-            .clone()
     }
 
     /// Creates a new legacy [`Bytecode`] by analyzing raw bytes.
