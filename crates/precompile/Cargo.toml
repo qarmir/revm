@@ -48,7 +48,6 @@ ark-bn254 = { workspace = true, features = ["curve"], optional = true }
 ark-ec = { workspace = true, optional = true }
 ark-ff = { workspace = true, features = ["asm"], optional = true }
 ark-serialize = { workspace = true, optional = true }
-solana-program = { workspace = true, optional = true }
 
 # KZG point evaluation precompile
 c-kzg = { workspace = true, optional = true, features = [
@@ -69,6 +68,9 @@ aws-lc-rs = { workspace = true, optional = true }
 # utils
 cfg-if.workspace = true
 arrayref = "0.3.6"
+
+[target.'cfg(target_arch = "sbf")'.dependencies]
+solana-program.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true
@@ -108,7 +110,6 @@ std = [
 hashbrown = ["primitives/hashbrown"]
 asm-keccak = ["primitives/asm-keccak"]
 asm-sha2 = ["sha2/asm"]
-solana-sbf = ["dep:solana-program"]
 k256 = ["dep:k256"]
 
 

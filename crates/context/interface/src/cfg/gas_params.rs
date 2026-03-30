@@ -10,13 +10,33 @@ use primitives::{
     hardfork::SpecId::{self},
     OnceLock, U256,
 };
+#[cfg(target_arch = "sbf")]
+use std::boxed::Box;
+#[cfg(not(target_arch = "sbf"))]
 use std::sync::Arc;
+
+#[cfg(target_arch = "sbf")]
+type GasTable = Box<[u64; 256]>;
+#[cfg(not(target_arch = "sbf"))]
+type GasTable = Arc<[u64; 256]>;
+
+#[inline]
+fn into_gas_table(table: [u64; 256]) -> GasTable {
+    #[cfg(target_arch = "sbf")]
+    {
+        return Box::new(table);
+    }
+    #[cfg(not(target_arch = "sbf"))]
+    {
+        Arc::new(table)
+    }
+}
 
 /// Gas table for dynamic gas constants.
 #[derive(Clone)]
 pub struct GasParams {
     /// Table of gas costs for operations
-    table: Arc<[u64; 256]>,
+    table: GasTable,
     /// Pointer to the table.
     ptr: *const u64,
 }

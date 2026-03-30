@@ -44,5 +44,5 @@ pub use handler::{
 pub use inspector::{InspectCommitEvm, InspectEvm, InspectSystemCallEvm, Inspector};
 pub use precompile::install_crypto;
 
-#[cfg(all(feature = "solana-sbf", feature = "std"))]
-compile_error!("`solana-sbf` requires no_std: disable `std`/default features.");
+#[cfg(all(target_arch = "sbf", feature = "std"))]
+compile_error!("`sbf` arch requires no_std: disable `std`/default features.");

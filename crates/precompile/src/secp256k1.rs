@@ -5,37 +5,15 @@
 //! * [`secp256k1`](https://crates.io/crates/secp256k1) - uses `bitcoin_secp256k1` lib, it is a C implementation of secp256k1 used in bitcoin core.
 //!   It is faster than k256 and enabled by default and in std environment.
 
-//! Exactly one backend feature must be enabled:
-//! `secp256k1` or `k256` or `solana-sbf`.
-//!
-//! Input format:
-//! [32 bytes for message][64 bytes for signature][1 byte for recovery id]
-//!
-//! Output format:
-//! [32 bytes for recovered address]
-#[cfg(not(any(
-    feature = "secp256k1",
-    feature = "k256",
-    feature = "solana-sbf",
-)))]
-compile_error!("Enable exactly one backend feature: `secp256k1`, `k256`, or `solana-sbf`.");
-
-#[cfg(any(
-    all(feature = "secp256k1", feature = "k256"),
-    all(feature = "secp256k1", feature = "solana-sbf"),
-    all(feature = "k256", feature = "solana-sbf"),
-))]
-compile_error!("Backend features are mutually exclusive: choose one of `secp256k1`, `k256`, or `solana-sbf`.");
-
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", not(target_arch = "sbf")))]
 /// `ecrecover` backend powered by the `secp256k1` crate.
 pub mod bitcoin_secp256k1;
 
-#[cfg(feature = "solana-sbf")]
+#[cfg(target_arch = "sbf")]
 /// `ecrecover` backend powered by Solana secp256k1 recovery syscall.
 pub mod solana_k256;
 
-#[cfg(feature = "k256")]
+#[cfg(all(feature = "k256", not(target_arch = "sbf")))]
 /// `ecrecover` backend powered by the pure Rust `k256` crate.
 pub mod k256;
 
@@ -76,20 +54,6 @@ pub fn ec_recover_run(input: &[u8], gas_limit: u64) -> PrecompileResult {
     Ok(PrecompileOutput::new(ECRECOVER_BASE, out))
 }
 
-#[cfg(any(
-    all(
-        feature = "secp256k1",
-        not(any(feature = "k256", feature = "solana-sbf")),
-    ),
-    all(
-        feature = "k256",
-        not(any(feature = "secp256k1", feature = "solana-sbf")),
-    ),
-    all(
-        feature = "solana-sbf",
-        not(any(feature = "secp256k1", feature = "k256")),
-    ),
-))]
 pub(crate) fn ecrecover_bytes(sig: &[u8; 64], recid: u8, msg: &[u8; 32]) -> Option<[u8; 32]> {
     match ecrecover(sig.into(), recid, msg.into()) {
         Ok(address) => Some(address.0),
@@ -97,39 +61,15 @@ pub(crate) fn ecrecover_bytes(sig: &[u8; 64], recid: u8, msg: &[u8; 32]) -> Opti
     }
 }
 
-#[cfg(not(any(
-    all(
-        feature = "secp256k1",
-        not(any(feature = "k256", feature = "solana-sbf")),
-    ),
-    all(
-        feature = "k256",
-        not(any(feature = "secp256k1", feature = "solana-sbf")),
-    ),
-    all(
-        feature = "solana-sbf",
-        not(any(feature = "secp256k1", feature = "k256")),
-    ),
-)))]
-pub(crate) fn ecrecover_bytes(_: &[u8; 64], _: u8, _: &[u8; 32]) -> Option<[u8; 32]> {
-    None
+// Select the correct implementation based on the enabled features.
+cfg_if::cfg_if! {
+    if #[cfg(target_arch = "sbf")] {
+        pub use solana_k256::ecrecover;
+    } else if #[cfg(feature = "secp256k1")] {
+        pub use bitcoin_secp256k1::ecrecover;
+    } else if #[cfg(feature = "k256")] {
+        pub use k256::ecrecover;
+    } else {
+        compile_error!("One of the features must be enabled on non-sbf targets: secp256k1 | k256");
+    }
 }
-
-// Select the implementation based on the enabled backend feature.
-#[cfg(all(
-    feature = "secp256k1",
-    not(any(feature = "k256", feature = "solana-sbf")),
-))]
-pub use bitcoin_secp256k1::ecrecover;
-
-#[cfg(all(
-    feature = "solana-sbf",
-    not(any(feature = "secp256k1", feature = "k256")),
-))]
-pub use solana_k256::ecrecover;
-
-#[cfg(all(
-    feature = "k256",
-    not(any(feature = "secp256k1", feature = "solana-sbf")),
-))]
-pub use k256::ecrecover;

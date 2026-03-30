@@ -135,5 +135,3 @@ p256-aws-lc-rs = ["precompile/p256-aws-lc-rs"]
 
 # Statetest types for running ethereum tests
 test-types = ["dep:statetest-types"]
-
-solana-sbf = ["precompile/solana-sbf"]
