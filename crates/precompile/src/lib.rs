@@ -488,13 +488,13 @@ mod test {
 
     #[test]
     fn test_difference_precompile_sets() {
-        let difference = Precompiles::istanbul().difference(Precompiles::berlin());
+        let difference = Precompiles::istanbul().difference(&Precompiles::berlin());
         assert!(difference.is_empty());
     }
 
     #[test]
     fn test_intersection_precompile_sets() {
-        let intersection = Precompiles::homestead().intersection(Precompiles::byzantium());
+        let intersection = Precompiles::homestead().intersection(&Precompiles::byzantium());
 
         assert_eq!(intersection.len(), 4)
     }

@@ -53,9 +53,9 @@ impl Hash for GasParams {
     }
 }
 
-/// Pointer points to Arc so it is safe to send across threads
+/// Pointer points to owned gas table storage so it is safe to send across threads
 unsafe impl Send for GasParams {}
-/// Pointer points to Arc so it is safe to access
+/// Pointer points to owned gas table storage so it is safe to access
 unsafe impl Sync for GasParams {}
 
 impl core::fmt::Debug for GasParams {
@@ -74,7 +74,7 @@ pub const fn num_words(len: usize) -> usize {
 impl Eq for GasParams {}
 #[cfg(feature = "serde")]
 mod serde {
-    use super::{Arc, GasParams};
+    use super::{into_gas_table, GasParams};
     use std::vec::Vec;
 
     #[derive(serde::Serialize, serde::Deserialize)]
@@ -104,7 +104,7 @@ mod serde {
             if table.table.len() != 256 {
                 return Err(serde::de::Error::custom("Invalid gas params length"));
             }
-            Ok(Self::new(Arc::new(table.table.try_into().unwrap())))
+            Ok(Self::new(into_gas_table(table.table.try_into().unwrap())))
         }
     }
 }
@@ -118,7 +118,7 @@ impl Default for GasParams {
 impl GasParams {
     /// Creates a new `GasParams` with the given table.
     #[inline]
-    pub fn new(table: Arc<[u64; 256]>) -> Self {
+    pub fn new(table: GasTable) -> Self {
         Self {
             ptr: table.as_ptr(),
             table,
@@ -145,7 +145,7 @@ impl GasParams {
         for (id, value) in values.into_iter() {
             table[id.as_usize()] = value;
         }
-        *self = Self::new(Arc::new(table));
+        *self = Self::new(into_gas_table(table));
     }
 
     /// Returns the table.
@@ -304,7 +304,7 @@ impl GasParams {
             table[GasId::tx_floor_cost_base_gas().as_usize()] = 21000;
         }
 
-        Self::new(Arc::new(table))
+        Self::new(into_gas_table(table))
     }
 
     /// Gets the gas cost for the given gas id.
