@@ -42,6 +42,9 @@ where
         msg!("instructions created");
         let precompiles = EthPrecompiles::new(spec);
         msg!("precompiles created");
+        #[cfg(any(target_arch = "bpf", target_arch = "sbf"))]
+        let frame_stack = FrameStack::new();
+        #[cfg(not(any(target_arch = "bpf", target_arch = "sbf")))]
         let frame_stack = FrameStack::new_prealloc(8);
         msg!("frame stack created");
         Evm {
@@ -58,12 +61,16 @@ where
         inspector: INSP,
     ) -> MainnetEvm<Self::Context, INSP> {
         let spec = self.cfg.spec().into();
+        #[cfg(any(target_arch = "bpf", target_arch = "sbf"))]
+        let frame_stack = FrameStack::new();
+        #[cfg(not(any(target_arch = "bpf", target_arch = "sbf")))]
+        let frame_stack = FrameStack::new_prealloc(8);
         Evm {
             ctx: self,
             inspector,
             instruction: EthInstructions::new_mainnet_with_spec(spec),
             precompiles: EthPrecompiles::new(spec),
-            frame_stack: FrameStack::new_prealloc(8),
+            frame_stack,
         }
     }
 }
