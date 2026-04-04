@@ -43,8 +43,7 @@ where
         let frame_stack = FrameStack::new();
         #[cfg(not(target_os = "solana"))]
         let frame_stack = FrameStack::new_prealloc(8);
-
-        msg!("frame stack created");
+        
         Evm {
             ctx: self,
             inspector: (),
